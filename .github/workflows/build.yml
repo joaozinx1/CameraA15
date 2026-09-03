@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -16,30 +16,25 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 18
 
-      - name: Set up Java 21
+      - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '21'
+          java-version: '17'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
-      - name: Make Gradlew Executable
-        run: chmod +x android/gradlew
-
-      - name: Bundle JS and Build Release APK
+      - name: Build Android Release APK
         run: |
-          mkdir -p android/app/src/main/assets
-          npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ || true
           cd android
-          ./gradlew clean
+          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CameraA15-Release-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: CameraA15-Release
+          path: android/app/build/outputs/apk/release/app-release.unsigned.apk
